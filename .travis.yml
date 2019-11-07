@@ -1,0 +1,25 @@
+language: python
+sudo: false
+matrix:
+  include:
+  - python: 2.7
+    env: TOXENV=py27,codecov
+  - python: 3.6
+    env: TOXENV=py36,codecov,lint
+  - python: pypy
+    env: TOXENV=pypy
+  - python: pypy3
+    env: TOXENV=pypy3
+install:
+- pip install -U pip tox
+script:
+- tox
+deploy:
+  provider: pypi
+  user: cfhamlet
+  script: pip install --upgrade setuptools wheel
+  password:
+    secure: evKe9PC40OU4R0XIbSY7ZRHa2xEdCDhgdUrhVZeo4SRzUmKpdgMyGdJabnWA9I6Y3c3vSa7U7FsYyl10zfK2rz9260Gwpcck21RVWiL1tbUuGVU1kaDyLyEjXtfa/jS4FvahX4W4q88C4MmaDD/t8eRI9gsO2CKA7YFB0BB2cyd+B0gFDbv7OzbY+YDxg2XXU4QnVcv8XNIK4bmKydoeOUxZaHUPqmC2SjCdlblMcig7KusCf+m6BoxPo/jGeU6kcu8NJdKsWfIuluWfShLIbjy8XKNj7D6EkqQ3e8A8GH3Br+yOWY+x+zNaLvKoIdSgcMUE/oImjz8O+4XVue2BXajygs1QGhLjV1/q6QCwNiAf5n/aW46AFf5bhni9G8rqa5d0gOgGsqs1L/5JXJqAURwjOsZMfB4r9ir9ZjDx199fTS4kpI8RXekfEEYuKo1fiDls30K6RdUESH+bi6RVrqBYToxBCY2p0RXrtQ0d957CLEwOoUe2W0PJ3ihvqoQTE3bTOIa2fPo4bTwCFvzwXS5HFUpLEJ9QX4Ke6SDc3TM8+cg7nQ3yFJeizM5hfvg4s14EJhv5L13ZHDMuyFNSfYFlhFRM4MIM7EZTuOv1QUjp2isHEe/uoeO/6RJ6FqrTd8e2dw4A58/us4tpBtiLaKxte6wll4ya3zxy6mN4vEM=
+  true:
+    tags: true
+    condition: ${TRAVIS_PYTHON_VERSION} == 2.7

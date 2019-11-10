@@ -27,6 +27,7 @@ setup(
     author_email='cfhamlet@gmail.com',
     url='https://github.com/cfhamlet/os-netloc-rule',
     install_requires=open('requirements/requirements.txt').read().split('\n'),
+    python_requires='>=2.7',
     zip_safe=False,
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
@@ -36,6 +37,6 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
     ])

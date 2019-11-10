@@ -1,4 +1,6 @@
-"""A common library for netloc rule.
+""" os-netloc-rule
+
+A common library for netloc rule.
 """
 import pkgutil
 import sys

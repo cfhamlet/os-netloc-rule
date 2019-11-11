@@ -9,7 +9,7 @@ class Node(object):
         self._default_rule = rule if port == -1 else None
         self._port_rules = (port, rule) if port is not None and port != -1 else None
 
-    def add_child(self, piece, port=None, rule=None):
+    def add_child(self, piece, port=None, rule=None, cmp=None):
         if self._children is None:
             self._children = (piece, Node(port, rule))
             return self._children[1]
@@ -17,7 +17,7 @@ class Node(object):
         if isinstance(self._children, tuple):
             child = self._children[1]
             if piece == self._children[0]:
-                child.add_rule(port, rule)
+                child.add_rule(port, rule, cmp)
                 return child
             new_child = Node(port, rule)
             self._children = {self._children[0]: self._children[1], piece: new_child}
@@ -29,7 +29,7 @@ class Node(object):
             return child
 
         child = self._children[piece]
-        child.add_rule(port, rule)
+        child.add_rule(port, rule, cmp)
         return child
 
     def get_rule(self, port):
@@ -68,29 +68,35 @@ class Node(object):
                     exact = self._children[piece]
         return wildcard, exact
 
-    def add_rule(self, port, rule, cmp=lambda _, y: y):
+    def add_rule(self, port, rule, cmp=None):
         if port is None:
             return
         elif port == -1:
             if self._default_rule is not None:
-                rule = cmp(self._default_rule, rule)
+                if cmp is not None:
+                    rule = cmp(self._default_rule, rule)
             self._default_rule = rule
         else:
             if self._port_rules is None:
                 self._port_rules = (port, rule)
             elif isinstance(self._port_rules, tuple):
                 if port == self._port_rules[0]:
+
                     if rule != self._port_rules[1]:
-                        self._port_rules = (port, cmp(self._port_rules[1], rule))
+                        if cmp is not None:
+                            rule = cmp(self._port_rules[1], rule)
+                        self._port_rules = (port, rule)
                 else:
                     self._port_rules = dict((self._port_rules, (port, rule)))
             elif port not in self._port_rules:
                 self._port_rules[port] = rule
             else:
-                self._port_rules[port] = cmp(self._port_rules[port], rule)
+                if cmp is not None:
+                    rule = cmp(self._port_rules[port], rule)
+                self._port_rules[port] = rule
 
 
-def load(root, pieces, port, rule):
+def load(root, pieces, port, rule, cmp=None):
 
     node = root
     if len(pieces) > 1:
@@ -99,7 +105,7 @@ def load(root, pieces, port, rule):
     for piece in pieces[-2:0:-1]:
         node = node.add_child(piece)
 
-    node.add_child(pieces[0], port if port is not None else -1, rule)
+    node.add_child(pieces[0], port if port is not None else -1, rule, cmp=cmp)
     return root
 
 

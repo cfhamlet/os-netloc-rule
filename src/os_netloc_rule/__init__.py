@@ -5,6 +5,8 @@ A common library for netloc rule.
 import pkgutil
 import sys
 
+from .matcher import Matcher  # isort: skip
+
 __all__ = ["__version__", "version_info"]
 
 

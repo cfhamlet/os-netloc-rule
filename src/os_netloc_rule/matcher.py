@@ -8,8 +8,7 @@ class Matcher(object):
         self._root = Node()
 
     def match(self, domain_with_port):
-        domain, port = split_domain_port(domain_with_port)
-        return match(self._root, domain.split(Symbols.DOT), port)
+        return match(self._root, *split_domain_port(domain_with_port))
 
     def load(self, domain_with_port, rule, cmp=None):
         domain, port = split_domain_port(domain_with_port)

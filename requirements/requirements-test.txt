@@ -1,0 +1,4 @@
+tox
+pytest > 2.10
+coverage
+pytest-env

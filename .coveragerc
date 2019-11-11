@@ -1,0 +1,10 @@
+[run]
+parallel = true
+branch = true
+source = os_netloc_rule
+
+[paths]
+source =
+    src/os_netloc_rule
+    .tox/*/lib/python*/site-packages/os_netloc_rule
+    .tox/*/site-packages/os_netloc_rule

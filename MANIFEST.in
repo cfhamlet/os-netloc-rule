@@ -1,0 +1,10 @@
+include LICENSE
+include README.md
+include MANIFEST.in
+include requirements/requirements.txt
+include src/os_netloc_rule/VERSION
+graft src
+graft tests
+global-exclude __pycache__
+global-exclude *.py[co]
+

@@ -63,8 +63,8 @@ def test_matcher_003(matcher):
         return x if x > y else y
 
     rules = [
-        ("www.example.com", 2, None, cmp),
-        ("www.example.com", 1, None, cmp),
+        ("www.example.com", 2, cmp),
+        ("www.example.com", 1, cmp),
     ]
     cases = [
         ("www.example.com", 2),

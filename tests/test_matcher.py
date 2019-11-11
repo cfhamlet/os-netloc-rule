@@ -1,4 +1,5 @@
 import pytest
+
 from os_netloc_rule.matcher import Matcher
 
 

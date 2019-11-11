@@ -71,3 +71,44 @@ def test_matcher_003(matcher):
     ]
 
     load_and_match(matcher, rules, cases)
+
+
+def test_matcher_004(matcher):
+    rules = [
+        ("www.example.com", 1),
+        ("abc.example.com", 2),
+        (".example.com:8080", 3),
+    ]
+    cases = [
+        ("www.example.com", 1),
+        ("abc.example.com", 2),
+        ("abc.example.com:8080", 3),
+    ]
+
+    load_and_match(matcher, rules, cases)
+
+
+def test_matcher_005(matcher):
+    rules = [
+        ("www.example.com:80", 1),
+        ("www.example.com:80", 2),
+    ]
+    cases = [
+        ("www.example.com:80", 2),
+    ]
+
+    load_and_match(matcher, rules, cases)
+
+
+def test_matcher_006(matcher):
+    rules = [
+        ("www.example.com:80", 1),
+        ("www.example.com:8080", 2),
+    ]
+    cases = [
+        ("www.example.com:70", None),
+        ("www.example.com:80", 1),
+        ("www.example.com:8080", 2),
+    ]
+
+    load_and_match(matcher, rules, cases)

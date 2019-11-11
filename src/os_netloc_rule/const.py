@@ -4,7 +4,7 @@ DEFAULT_ENCODING = "UTF-8"
 
 
 class Symbols(object):
-    EMPYT = ""
+    EMPTY = ""
     DOT = "."
     COLON = ":"
 

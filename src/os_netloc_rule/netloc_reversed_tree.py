@@ -96,7 +96,7 @@ class Node(object):
                 self._port_rules[port] = rule
 
 
-def load(root, pieces, port, rule, cmp=None):
+def load_from_pieces(root, pieces, port, rule, cmp=None):
 
     node = root
     if len(pieces) > 1:
@@ -109,8 +109,8 @@ def load(root, pieces, port, rule, cmp=None):
     return root
 
 
-def match(root, domain, port):
-    pieces = domain.split(Symbols.DOT)
+def match_with_pieces(root, pieces, port):
+
     exact = root
     best_match = (None, None)  # rule, match_port
 
@@ -125,3 +125,11 @@ def match(root, domain, port):
         if exact is None:
             break
     return best_match[0]
+
+
+def load(root, domain, port, rule, cmp=None):
+    return load_from_pieces(root, domain.split(Symbols.DOT), port, rule, cmp)
+
+
+def match(root, domain, port):
+    return match_with_pieces(domain.split(Symbols.DOT), port)

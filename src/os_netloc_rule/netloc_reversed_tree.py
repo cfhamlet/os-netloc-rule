@@ -8,7 +8,7 @@ class Node(object):
 
     def __init__(self, port=None, rule=None):
         self._children = None
-        self._default_rule = rule if port == -1 else None
+        self._default_rule = (-1, rule) if port == -1 else None
         self._port_rules = (port, rule) if port is not None and port != -1 else None
 
     def add_child(self, piece, port=None, rule=None, cmp=None):
@@ -35,25 +35,33 @@ class Node(object):
         return child
 
     def get_rule(self, port):
-        rule = match_port = None
+        rule = None
+        match_port = False
         if self._port_rules is None:
             if self._default_rule is not None:
-                rule = self._default_rule
-                match_port = False
+                rule = self._default_rule[1]
         elif isinstance(self._port_rules, tuple):
             if port == self._port_rules[0]:
                 rule = self._port_rules[1]
                 match_port = True
+            elif self._default_rule is not None:
+                rule = self._default_rule[1]
         else:
             if port in self._port_rules:
                 rule = self._port_rules[port]
                 match_port = True
-
-        if rule is None and self._default_rule is not None:
-            rule = self._default_rule
-            match_port = False
+            elif self._default_rule is not None:
+                rule = self._default_rule[1]
 
         return rule, match_port
+
+    def get_child(self, piece):
+        if self._children is not None:
+            if isinstance(self._children, tuple):
+                if piece == self._children[0]:
+                    return self._children[1]
+            if piece in self._children:
+                return self._children[piece]
 
     def match_child(self, piece):
         wildcard = exact = None
@@ -75,9 +83,9 @@ class Node(object):
             return
         elif port == -1:
             if self._default_rule is not None:
-                if cmp is not None:
-                    rule = cmp(self._default_rule, rule)
-            self._default_rule = rule
+                if cmp is not None and self._default_rule[1] != rule:
+                    rule = cmp(self._default_rule[1], rule)
+            self._default_rule = (-1, rule)
         else:
             if self._port_rules is None:
                 self._port_rules = (port, rule)
@@ -121,9 +129,8 @@ def match_with_pieces(root, pieces, port):
         for node in (wildcard, exact):
             if node is not None:
                 rule, match_port = node.get_rule(port)
-                if rule is not None:
-                    if not (best_match[1] and not match_port):
-                        best_match = (rule, match_port)
+                if not (best_match[1] and not match_port):
+                    best_match = (rule, match_port)
         if exact is None:
             break
     return best_match[0]
@@ -139,8 +146,27 @@ def match(root, domain_with_port):
     return match_with_pieces(root, domain.split(Symbols.DOT), port)
 
 
-def delete(root, domain_with_port):
-    pass
+# def delete(root, domain_with_port):
+#     def _delete(node, pieces, port, idx):
+#         piece = pieces[idx]
+#         child = node.get_child(piece)
+#         if child is None:
+#             return False, None
+
+#         if idx == 0:
+#             rule, match_port = child.get_rule(port)
+
+#         delete_and_rule = _delete(child, pieces, port, idx - 1)
+
+#         if not delete_and_rule[0]:
+#             return delete_and_rule
+
+#         return delete_and_rule
+
+#     domain, port = split_domain_port(domain_with_port)
+#     pieces = domain.split(Symbols.DOT)
+
+#     return _delete(root, pieces, port, len(pieces) - 1)
 
 
 def dump(root):
@@ -174,7 +200,7 @@ def dump(root):
                 pieces[0] = top
 
         if node._default_rule is not None:
-            yield pieces, node._default_rule
+            yield pieces, node._default_rule[1]
 
     o = []
     for pieces, rule in _dump(root, o):

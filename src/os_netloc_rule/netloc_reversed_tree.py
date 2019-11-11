@@ -1,3 +1,4 @@
+from .compat import iteritems
 from .const import Symbols
 from .utils import split_domain_port
 
@@ -128,11 +129,53 @@ def match_with_pieces(root, pieces, port):
     return best_match[0]
 
 
-def load(root, domain_with_port, rule, schema=None, cmp=None):
-    domain, port = split_domain_port(domain_with_port, schema)
+def load(root, domain_with_port, rule, cmp=None):
+    domain, port = split_domain_port(domain_with_port)
     return load_from_pieces(root, domain.split(Symbols.DOT), port, rule, cmp)
 
 
-def match(root, domain_with_port, schema=None):
-    domain, port = split_domain_port(domain_with_port, schema)
+def match(root, domain_with_port):
+    domain, port = split_domain_port(domain_with_port)
     return match_with_pieces(root, domain.split(Symbols.DOT), port)
+
+
+def delete(root, domain_with_port):
+    pass
+
+
+def dump(root):
+    def _dump(node, pieces):
+        if node._children is not None:
+            if isinstance(node._children, tuple):
+                piece, child = node._children
+                pieces.append(piece)
+                for r in _dump(child, pieces):
+                    yield r
+                pieces.pop(-1)
+            else:
+                for piece, child in iteritems(node._children):
+                    pieces.append(piece)
+                    for r in _dump(child, pieces):
+                        yield r
+                    pieces.pop(-1)
+
+        if node._port_rules is not None:
+            if isinstance(node._port_rules, tuple):
+                port, rule = node._port_rules
+                top = pieces[0]
+                pieces[0] = Symbols.COLON.join((top, port))
+                yield pieces, rule
+                pieces[0] = top
+            else:
+                top = pieces[0]
+                for port, rule in iteritems(node._port_rules):
+                    pieces[0] = Symbols.COLON.join((top, port))
+                    yield pieces, rule
+                pieces[0] = top
+
+        if node._default_rule is not None:
+            yield pieces, node._default_rule
+
+    o = []
+    for pieces, rule in _dump(root, o):
+        yield Symbols.DOT.join(pieces[::-1]), rule

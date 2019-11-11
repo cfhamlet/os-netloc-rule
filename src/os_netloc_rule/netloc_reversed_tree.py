@@ -63,8 +63,8 @@ class Node(object):
                 elif self._children[0] == Symbols.EMPTY:
                     wildcard = self._children[1]
             else:
-                if Symbols.EMPYT in self._children:
-                    wildcard = self._children[Symbols.EMPYT]
+                if Symbols.EMPTY in self._children:
+                    wildcard = self._children[Symbols.EMPTY]
                 if piece in self._children:
                     exact = self._children[piece]
         return wildcard, exact
@@ -128,11 +128,11 @@ def match_with_pieces(root, pieces, port):
     return best_match[0]
 
 
-def load(root, domain_with_port, rule, cmp=None):
-    domain, port = split_domain_port(domain_with_port)
+def load(root, domain_with_port, rule, schema=None, cmp=None):
+    domain, port = split_domain_port(domain_with_port, schema)
     return load_from_pieces(root, domain.split(Symbols.DOT), port, rule, cmp)
 
 
-def match(root, domain_with_port):
-    domain, port = split_domain_port(domain_with_port)
+def match(root, domain_with_port, schema=None):
+    domain, port = split_domain_port(domain_with_port, schema)
     return match_with_pieces(root, domain.split(Symbols.DOT), port)

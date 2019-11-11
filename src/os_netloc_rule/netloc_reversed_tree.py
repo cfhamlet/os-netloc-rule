@@ -1,4 +1,5 @@
 from .const import Symbols
+from .utils import split_domain_port
 
 
 class Node(object):
@@ -127,9 +128,11 @@ def match_with_pieces(root, pieces, port):
     return best_match[0]
 
 
-def load(root, domain, port, rule, cmp=None):
+def load(root, domain_with_port, rule, cmp=None):
+    domain, port = split_domain_port(domain_with_port)
     return load_from_pieces(root, domain.split(Symbols.DOT), port, rule, cmp)
 
 
-def match(root, domain, port):
-    return match_with_pieces(domain.split(Symbols.DOT), port)
+def match(root, domain_with_port):
+    domain, port = split_domain_port(domain_with_port)
+    return match_with_pieces(root, domain.split(Symbols.DOT), port)

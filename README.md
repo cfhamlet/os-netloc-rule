@@ -61,6 +61,19 @@ pip install os-netloc-rule
     matcher.load(netloc, rule, cmp=cmp)
     ```
 
+* dump rules
+
+    ```
+    for netloc, rule in matcher.dump():
+        pass
+    ```
+
+* delete rule
+
+    ```
+    delete, rule = matcher.delete('www.example.com')
+    ```
+
 ## Unit Tests
 
 ```

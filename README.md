@@ -74,6 +74,23 @@ pip install os-netloc-rule
     delete, rule = matcher.delete('www.example.com')
     ```
 
+## Benchmark
+
+Some benchmarks:
+
+| python version | operation |   memory   | speed  |
+| :------------: | :-------: | :--------: | :----: |
+|     2.7.14     |   load    | 100w, 380M | 91k/s  |
+|     2.7.14     |   match   |     -      | 118k/s |
+|     3.6.4      |   load    | 100w, 300M | 96k/s  |
+|     3.6.4      |   match   |     -      | 123k/s |
+|   pypy-5.7.1   |   load    | 100w, 251M | 283k/s |
+|   pypy-5.7.1   |   match   |     -      | 529k/s |
+| pypy3.6-7.2.0  |   load    | 100w, 305M | 265k/s |
+| pypy3.6-7.2.0  |   match   |     -      | 473k/s |
+
+
+
 ## Unit Tests
 
 ```

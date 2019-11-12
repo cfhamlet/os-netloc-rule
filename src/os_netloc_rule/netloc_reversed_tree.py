@@ -1,3 +1,4 @@
+from .compat import iteritems
 from .const import Symbols
 from .utils import split_domain_port
 
@@ -7,8 +8,43 @@ class Node(object):
 
     def __init__(self, port=None, rule=None):
         self._children = None
-        self._default_rule = rule if port == -1 else None
+        self._default_rule = (-1, rule) if port == -1 else None
         self._port_rules = (port, rule) if port is not None and port != -1 else None
+
+    def hollow(self):
+        return not all((self._children, self._default_rule, self._port_rules))
+
+    def delete_child(self, piece):
+        if self._children is not None:
+            if isinstance(self._children, tuple):
+                if self._children[0] == piece:
+                    self._children = None
+            else:
+                if piece in self._children:
+                    self._children.pop(piece)
+                    if len(self._children) == 1:
+                        self._children = list(iteritems(self._children))[0]
+
+    def delete_rule(self, port):
+        if port is None or port == -1:
+            if self._default_rule is not None:
+                rule = self._default_rule[1]
+                self._default_rule = None
+                return True, rule
+        elif self._port_rules is not None:
+            if isinstance(self._port_rules, tuple):
+                if port == self._port_rules[0]:
+                    rule = self._port_rules[1]
+                    self._port_rules = None
+                    return True, rule
+            else:
+                if port in self._port_rules:
+                    rule = self._port_rules.pop(port)
+                    if len(self._port_rules) == 1:
+                        self._port_rules = list(iteritems(self._port_rules))[0]
+                    return True, rule
+
+        return False, None
 
     def add_child(self, piece, port=None, rule=None, cmp=None):
         if self._children is None:
@@ -34,11 +70,10 @@ class Node(object):
         return child
 
     def get_rule(self, port):
-        rule = match_port = None
+        rule = None
+        match_port = False
         if self._port_rules is None:
-            if self._default_rule is not None:
-                rule = self._default_rule
-                match_port = False
+            pass
         elif isinstance(self._port_rules, tuple):
             if port == self._port_rules[0]:
                 rule = self._port_rules[1]
@@ -48,11 +83,18 @@ class Node(object):
                 rule = self._port_rules[port]
                 match_port = True
 
-        if rule is None and self._default_rule is not None:
-            rule = self._default_rule
-            match_port = False
+        if not match_port and self._default_rule is not None:
+            rule = self._default_rule[1]
 
         return rule, match_port
+
+    def get_child(self, piece):
+        if self._children is not None:
+            if isinstance(self._children, tuple):
+                if piece == self._children[0]:
+                    return self._children[1]
+            if piece in self._children:
+                return self._children[piece]
 
     def match_child(self, piece):
         wildcard = exact = None
@@ -74,9 +116,9 @@ class Node(object):
             return
         elif port == -1:
             if self._default_rule is not None:
-                if cmp is not None:
-                    rule = cmp(self._default_rule, rule)
-            self._default_rule = rule
+                if cmp is not None and self._default_rule[1] != rule:
+                    rule = cmp(self._default_rule[1], rule)
+            self._default_rule = (-1, rule)
         else:
             if self._port_rules is None:
                 self._port_rules = (port, rule)
@@ -120,19 +162,82 @@ def match_with_pieces(root, pieces, port):
         for node in (wildcard, exact):
             if node is not None:
                 rule, match_port = node.get_rule(port)
-                if rule is not None:
-                    if not (best_match[1] and not match_port):
-                        best_match = (rule, match_port)
+                if not (best_match[1] and not match_port):
+                    best_match = (rule, match_port)
         if exact is None:
             break
     return best_match[0]
 
 
-def load(root, domain_with_port, rule, schema=None, cmp=None):
-    domain, port = split_domain_port(domain_with_port, schema)
+def load(root, domain_with_port, rule, cmp=None):
+    domain, port = split_domain_port(domain_with_port)
     return load_from_pieces(root, domain.split(Symbols.DOT), port, rule, cmp)
 
 
-def match(root, domain_with_port, schema=None):
-    domain, port = split_domain_port(domain_with_port, schema)
+def match(root, domain_with_port):
+    domain, port = split_domain_port(domain_with_port)
     return match_with_pieces(root, domain.split(Symbols.DOT), port)
+
+
+def delete(root, domain_with_port):
+    def _delete(node, pieces, port, idx):
+        piece = pieces[idx]
+        child = node.get_child(piece)
+        if child is None:
+            return False, None
+
+        if idx == 0:
+            delete_and_rule = child.delete_rule(port)
+        else:
+            delete_and_rule = _delete(child, pieces, port, idx - 1)
+
+        if not delete_and_rule[0]:
+            return delete_and_rule
+
+        if child.hollow():
+            node.delete_child(piece)
+
+        return delete_and_rule
+
+    domain, port = split_domain_port(domain_with_port)
+    pieces = domain.split(Symbols.DOT)
+
+    return _delete(root, pieces, port, len(pieces) - 1)
+
+
+def dump(root):
+    def _dump(node, pieces):
+        if node._children is not None:
+            if isinstance(node._children, tuple):
+                piece, child = node._children
+                pieces.append(piece)
+                for r in _dump(child, pieces):
+                    yield r
+                pieces.pop(-1)
+            else:
+                for piece, child in iteritems(node._children):
+                    pieces.append(piece)
+                    for r in _dump(child, pieces):
+                        yield r
+                    pieces.pop(-1)
+
+        if node._port_rules is not None:
+            if isinstance(node._port_rules, tuple):
+                port, rule = node._port_rules
+                top = pieces[0]
+                pieces[0] = Symbols.COLON.join((top, port))
+                yield pieces, rule
+                pieces[0] = top
+            else:
+                top = pieces[0]
+                for port, rule in iteritems(node._port_rules):
+                    pieces[0] = Symbols.COLON.join((top, port))
+                    yield pieces, rule
+                pieces[0] = top
+
+        if node._default_rule is not None:
+            yield pieces, node._default_rule[1]
+
+    o = []
+    for pieces, rule in _dump(root, o):
+        yield Symbols.DOT.join(pieces[::-1]), rule

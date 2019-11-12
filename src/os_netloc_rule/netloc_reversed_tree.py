@@ -12,7 +12,7 @@ class Node(object):
         self._port_rules = (port, rule) if port is not None and port != -1 else None
 
     def hollow(self):
-        return not all((self._children, self._default_rule, self._port_rules))
+        return not any((self._children, self._default_rule, self._port_rules))
 
     def delete_child(self, piece):
         if self._children is not None:

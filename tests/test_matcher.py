@@ -153,3 +153,38 @@ def test_matcher_dump(matcher):
     o = list(matcher.dump())
 
     assert set(o) == set(rules)
+
+
+def test_matcher_delete_001(matcher):
+    rules = [
+        ("www.example.com:80", 1),
+    ]
+
+    for domain_with_port, rule in rules:
+        matcher.load(domain_with_port, rule)
+
+    matcher.delete("www.example.com") == (False, None)
+    matcher.delete("www.example.com:80") == (True, 1)
+
+    o = list(matcher.dump())
+    assert set(o) == set([])
+
+
+def test_matcher_delete_002(matcher):
+    rules = [
+        ("www.example.com", 0),
+        ("www.example.com:80", 1),
+        ("www.example.com:8080", 2),
+        ("abc.example.com:8080", 3),
+    ]
+
+    for domain_with_port, rule in rules:
+        matcher.load(domain_with_port, rule)
+
+    matcher.delete("www.example.com") == (True, 0)
+    matcher.delete("www.example.com:80") == (True, 1)
+    matcher.delete("www.example.com:8080") == (True, 2)
+    matcher.delete("abc.example.com:8080") == (True, 3)
+
+    o = list(matcher.dump())
+    assert set(o) == set([])

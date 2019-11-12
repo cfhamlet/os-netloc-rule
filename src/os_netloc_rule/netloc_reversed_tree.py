@@ -11,6 +11,41 @@ class Node(object):
         self._default_rule = (-1, rule) if port == -1 else None
         self._port_rules = (port, rule) if port is not None and port != -1 else None
 
+    def hollow(self):
+        return not all((self._children, self._default_rule, self._port_rules))
+
+    def delete_child(self, piece):
+        if self._children is not None:
+            if isinstance(self._children, tuple):
+                if self._children[0] == piece:
+                    self._children = None
+            else:
+                if piece in self._children:
+                    self._children.pop(piece)
+                    if len(self._children) == 1:
+                        self._children = list(iteritems(self._children))[0]
+
+    def delete_rule(self, port):
+        if port is None or port == -1:
+            if self._default_rule is not None:
+                rule = self._default_rule[1]
+                self._default_rule = None
+                return True, rule
+        elif self._port_rules is not None:
+            if isinstance(self._port_rules, tuple):
+                if port == self._port_rules[0]:
+                    rule = self._port_rules[1]
+                    self._port_rules = None
+                    return True, rule
+            else:
+                if port in self._port_rules:
+                    rule = self._port_rules.pop(port)
+                    if len(self._port_rules) == 1:
+                        self._port_rules = list(iteritems(self._port_rules))[0]
+                    return True, rule
+
+        return False, None
+
     def add_child(self, piece, port=None, rule=None, cmp=None):
         if self._children is None:
             self._children = (piece, Node(port, rule))
@@ -38,20 +73,18 @@ class Node(object):
         rule = None
         match_port = False
         if self._port_rules is None:
-            if self._default_rule is not None:
-                rule = self._default_rule[1]
+            pass
         elif isinstance(self._port_rules, tuple):
             if port == self._port_rules[0]:
                 rule = self._port_rules[1]
                 match_port = True
-            elif self._default_rule is not None:
-                rule = self._default_rule[1]
         else:
             if port in self._port_rules:
                 rule = self._port_rules[port]
                 match_port = True
-            elif self._default_rule is not None:
-                rule = self._default_rule[1]
+
+        if not match_port and self._default_rule is not None:
+            rule = self._default_rule[1]
 
         return rule, match_port
 
@@ -146,27 +179,30 @@ def match(root, domain_with_port):
     return match_with_pieces(root, domain.split(Symbols.DOT), port)
 
 
-# def delete(root, domain_with_port):
-#     def _delete(node, pieces, port, idx):
-#         piece = pieces[idx]
-#         child = node.get_child(piece)
-#         if child is None:
-#             return False, None
+def delete(root, domain_with_port):
+    def _delete(node, pieces, port, idx):
+        piece = pieces[idx]
+        child = node.get_child(piece)
+        if child is None:
+            return False, None
 
-#         if idx == 0:
-#             rule, match_port = child.get_rule(port)
+        if idx == 0:
+            delete_and_rule = child.delete_rule(port)
+        else:
+            delete_and_rule = _delete(child, pieces, port, idx - 1)
 
-#         delete_and_rule = _delete(child, pieces, port, idx - 1)
+        if not delete_and_rule[0]:
+            return delete_and_rule
 
-#         if not delete_and_rule[0]:
-#             return delete_and_rule
+        if child.hollow():
+            node.delete_child(piece)
 
-#         return delete_and_rule
+        return delete_and_rule
 
-#     domain, port = split_domain_port(domain_with_port)
-#     pieces = domain.split(Symbols.DOT)
+    domain, port = split_domain_port(domain_with_port)
+    pieces = domain.split(Symbols.DOT)
 
-#     return _delete(root, pieces, port, len(pieces) - 1)
+    return _delete(root, pieces, port, len(pieces) - 1)
 
 
 def dump(root):

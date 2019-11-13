@@ -1,6 +1,6 @@
 from .compat import iteritems
 from .const import Symbols
-from .utils import split_domain_port
+from .utils import split_netloc
 
 
 class Node(object):
@@ -169,17 +169,17 @@ def match_with_pieces(root, pieces, port):
     return best_match[0]
 
 
-def load(root, domain_with_port, rule, cmp=None):
-    domain, port = split_domain_port(domain_with_port)
+def load(root, netloc, rule, cmp=None):
+    domain, port = split_netloc(netloc)
     return load_from_pieces(root, domain.split(Symbols.DOT), port, rule, cmp)
 
 
-def match(root, domain_with_port):
-    domain, port = split_domain_port(domain_with_port)
+def match(root, netloc):
+    domain, port = split_netloc(netloc)
     return match_with_pieces(root, domain.split(Symbols.DOT), port)
 
 
-def delete(root, domain_with_port):
+def delete(root, netloc):
     def _delete(node, pieces, port, idx):
         piece = pieces[idx]
         child = node.get_child(piece)
@@ -199,7 +199,7 @@ def delete(root, domain_with_port):
 
         return delete_and_rule
 
-    domain, port = split_domain_port(domain_with_port)
+    domain, port = split_netloc(netloc)
     pieces = domain.split(Symbols.DOT)
 
     return _delete(root, pieces, port, len(pieces) - 1)

@@ -154,6 +154,36 @@ def test_matcher_009(matcher):
     load_and_match(matcher, rules, cases)
 
 
+def test_matcher_010(matcher):
+    def cmp(x, y):
+        return x if x > y else y
+
+    rules = [
+        ("www.example.com:80", 3, cmp),
+        ("www.example.com:80", 2, cmp),
+        ("www.example.com:80", 1, cmp),
+    ]
+    cases = [
+        ("www.example.com:80", 3),
+    ]
+
+    load_and_match(matcher, rules, cases)
+
+
+def test_matcher_011(matcher):
+
+    rules = [
+        ("www.example.com:80", 3),
+        ("www.example.com:80", 2),
+        ("www.example.com:80", 1),
+    ]
+    cases = [
+        ("www.example.com:80", 1),
+    ]
+
+    load_and_match(matcher, rules, cases)
+
+
 def test_matcher_dump_001(matcher):
     rules = [
         ("www.example.com:80", 1),
@@ -173,6 +203,7 @@ def test_matcher_dump_001(matcher):
 def test_matcher_dump_002(matcher):
     rules = [
         ("www.example.com", 1),
+        ("www.example.com:80", 2),
     ]
 
     for domain_with_port, rule in rules:

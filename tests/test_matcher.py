@@ -139,12 +139,40 @@ def test_matcher_008(matcher):
     load_and_match(matcher, rules, cases)
 
 
-def test_matcher_dump(matcher):
+def test_matcher_009(matcher):
+    def cmp(x, y):
+        return x if x > y else y
+
+    rules = [
+        ("www.example.com:80", 2, cmp),
+        ("www.example.com:90", 1, cmp),
+    ]
+    cases = [
+        ("www.example.com:80", 2),
+    ]
+
+    load_and_match(matcher, rules, cases)
+
+
+def test_matcher_dump_001(matcher):
     rules = [
         ("www.example.com:80", 1),
         ("www.example.com:8080", 2),
         (".example.com:8080", 3),
         (".example.com", 4),
+    ]
+
+    for domain_with_port, rule in rules:
+        matcher.load(domain_with_port, rule)
+
+    o = list(matcher.dump())
+
+    assert set(o) == set(rules)
+
+
+def test_matcher_dump_002(matcher):
+    rules = [
+        ("www.example.com", 1),
     ]
 
     for domain_with_port, rule in rules:
@@ -185,6 +213,55 @@ def test_matcher_delete_002(matcher):
     assert matcher.delete("www.example.com:80") == (True, 1)
     assert matcher.delete("www.example.com:8080") == (True, 2)
     assert matcher.delete("abc.example.com:8080") == (True, 3)
+
+    o = list(matcher.dump())
+    assert set(o) == set([])
+
+
+def test_matcher_delete_003(matcher):
+    rules = [
+        ("www.example.com", 0),
+    ]
+
+    for domain_with_port, rule in rules:
+        matcher.load(domain_with_port, rule)
+
+    assert matcher.delete("www.test.com") == (False, None)
+    assert matcher.delete("www.example.com") == (True, 0)
+
+    o = list(matcher.dump())
+    assert set(o) == set([])
+
+
+def test_matcher_delete_004(matcher):
+    rules = [
+        ("www.example.com:80", 0),
+        ("www.example.com:90", 1),
+    ]
+
+    for domain_with_port, rule in rules:
+        matcher.load(domain_with_port, rule)
+
+    assert matcher.delete("www.example.com:80") == (True, 0)
+    assert matcher.delete("www.example.com:90") == (True, 1)
+
+    o = list(matcher.dump())
+    assert set(o) == set([])
+
+
+def test_matcher_delete_005(matcher):
+    rules = [
+        ("www.example.com:80", 0),
+        ("www.example.com:90", 1),
+        ("www.example.com", 2),
+    ]
+
+    for domain_with_port, rule in rules:
+        matcher.load(domain_with_port, rule)
+
+    assert matcher.delete("www.example.com:80") == (True, 0)
+    assert matcher.delete("www.example.com:90") == (True, 1)
+    assert matcher.delete("www.example.com") == (True, 2)
 
     o = list(matcher.dump())
     assert set(o) == set([])

@@ -1,4 +1,4 @@
-from os_netloc_rule.utils import split_domain_port
+from os_netloc_rule.utils import split_netloc
 
 
 def test_split_domain_port():
@@ -11,5 +11,5 @@ def test_split_domain_port():
         (("127.0.0.1", "ssh"), ("127.0.0.1", "22")),
     ]
 
-    for domain_with_port_and_schema, expected in cases:
-        assert expected == split_domain_port(*domain_with_port_and_schema)
+    for netloc_and_schema, expected in cases:
+        assert expected == split_netloc(*netloc_and_schema)

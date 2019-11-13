@@ -1,19 +1,19 @@
 import pytest
 
-from os_netloc_rule.matcher import Matcher
+from os_netloc_rule import DictMatcher, TreeMatcher
 
 
-@pytest.fixture(scope="function")
-def matcher():
-    return Matcher()
+@pytest.fixture(scope="function", params=[TreeMatcher, DictMatcher])
+def matcher(request):
+    return request.param()
 
 
 def load_and_match(matcher, rules, cases):
     for rule in rules:
         matcher.load(*rule)
 
-    for domain_with_port, expected in cases:
-        assert matcher.match(domain_with_port) == expected
+    for netloc, expected in cases:
+        assert matcher.match(netloc) == expected
 
 
 def test_matcher_001(matcher):

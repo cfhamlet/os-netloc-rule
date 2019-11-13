@@ -1,19 +1,15 @@
-from .netloc_reversed_tree import Node, delete, dump, load, match
-
-
 class Matcher(object):
     def __init__(self):
-        self._root = Node()
+        pass
 
-    def match(self, domain_with_port):
-        return match(self._root, domain_with_port)
+    def match(self, netloc):
+        pass
 
-    def load(self, domain_with_port, rule, cmp=None):
-        return load(self._root, domain_with_port, rule, cmp=cmp)
+    def load(self, netloc, rule, cmp=None):
+        pass
 
-    def delete(self, domain_with_port):
-        return delete(self._root, domain_with_port)
+    def delete(self, netloc):
+        pass
 
     def dump(self):
-        for r in dump(self._root):
-            yield r
+        pass

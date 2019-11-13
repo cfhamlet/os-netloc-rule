@@ -29,10 +29,24 @@ pip install os-netloc-rule
 
 ## Usage
 
+* we have different  implementations of matcher. From the benchmark , ``DictMatcher`` is much more quickly and memory efficient
+
+    * ``TreeMatcher``, based on prefix tree
+    
+        ```
+        from os_netloc_rule import TreeMatcher as Matcher
+        ```
+    
+    * ``DictMatcher``, based on dict
+
+        ```
+        from os_netloc_rule import DictMatcher as Matcher
+        ```
+
 * load rule
 
     ```
-    from os_netloc_rule import Matcher
+    from os_netloc_rule import DictMatcher as Matcher
     
     rules = [
         ('www.example.com', 1),
@@ -76,7 +90,7 @@ pip install os-netloc-rule
 
 ## Benchmark
 
-Some benchmarks:
+``TreeMatcher``:
 
 | python version | operation |   memory   | speed  |
 | :------------: | :-------: | :--------: | :----: |
@@ -89,6 +103,18 @@ Some benchmarks:
 | pypy3.6-7.2.0  |   load    | 100w, 305M | 265k/s |
 | pypy3.6-7.2.0  |   match   |     -      | 473k/s |
 
+``DictMatcher``:
+
+| python version | operation |   memory   |  speed  |
+| :------------: | :-------: | :--------: | :-----: |
+|     2.7.14     |   load    | 100w, 120M | 650k/s  |
+|     2.7.14     |   match   |     -      | 417k/s  |
+|     3.6.4      |   load    | 100w, 100M | 578k/s  |
+|     3.6.4      |   match   |     -      | 389k/s  |
+|   pypy-5.7.1   |   load    | 100w, 75M  | 1.14m/s |
+|   pypy-5.7.1   |   match   |     -      | 2.4m/s  |
+| pypy3.6-7.2.0  |   load    | 100w, 180M | 1.1m/s  |
+| pypy3.6-7.2.0  |   match   |     -      |  2m/s   |
 
 
 ## Unit Tests

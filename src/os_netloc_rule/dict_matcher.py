@@ -108,8 +108,9 @@ class DictMatcher(Matcher):
                     yield domain, rules[1]
                 else:
                     yield Symbols.COLON.join((domain, rules[0])), rules[1]
-            for port, rule in iteritems(rules):
-                if port is None:
-                    yield domain, rule
-                else:
-                    yield Symbols.COLON.join((domain, port)), rule
+            else:
+                for port, rule in iteritems(rules):
+                    if port is None:
+                        yield domain, rule
+                    else:
+                        yield Symbols.COLON.join((domain, port)), rule

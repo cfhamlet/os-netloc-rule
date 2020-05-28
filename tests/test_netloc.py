@@ -183,6 +183,7 @@ def test_matcher_011(matcher):
 
     load_and_match(matcher, cases, expects)
 
+
 def test_matcher_012(matcher):
 
     cases = [
@@ -197,6 +198,7 @@ def test_matcher_012(matcher):
     ]
 
     load_and_match(matcher, cases, expects)
+
 
 def test_matcher_iter_001(matcher):
     cases = [

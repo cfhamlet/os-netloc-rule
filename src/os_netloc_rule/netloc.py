@@ -126,7 +126,7 @@ class Matcher(object):
             port = c[1]
         return self.match(host, port, scheme)
 
-    def match(self, host, port, scheme):
+    def match(self, host, port="", scheme=""):
         best = (None, None)
         for piece in sub_pieces(host):
             nlr, exact = self._match(piece, port, scheme)

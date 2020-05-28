@@ -5,18 +5,18 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/os-netloc-rule.svg)](https://pypi.python.org/pypi/os-netloc-rule)
 [![PyPI](https://img.shields.io/pypi/v/os-netloc-rule.svg)](https://pypi.python.org/pypi/os-netloc-rule)
 
-A common library for netloc rule use case.
+A library for matching netloc.
 
+Netloc is a concept to describe the location of a URL, it can be treated as 3-tuple (host, port, scheme)
 
 Netloc match is a very common and useful operation on processing URL. For example, netloc blacklist is a series rules of netloc with *ALLOWED* or *DISALLOWED*:
 
 ```
-abc.example.com ALLOWED
-.example.com DISALLOWED
+abc.example.com|80|http ALLOWED
+.example.com|| DISALLOWED
 ```
 
-You can skip processing ``http://www.example.com/001.html`` becase it match the rule ``.example.com DISALLOWED``.
-
+You can skip processing ``http://www.example.com/001.html`` becase it match ``.example.com|| DISALLOWED``.
 
 
 ## Install
@@ -25,97 +25,46 @@ You can skip processing ``http://www.example.com/001.html`` becase it match the 
 pip install os-netloc-rule
 ```
 
+## APIs
 
-
-## Usage
-
-* we have different  implementations of matcher. From the benchmark , ``DictMatcher`` is much more quickly and memory efficient
-
-    * ``TreeMatcher``, based on prefix tree
-    
-        ```
-        from os_netloc_rule import TreeMatcher as Matcher
-        ```
-    
-    * ``DictMatcher``, based on dict
-
-        ```
-        from os_netloc_rule import DictMatcher as Matcher
-        ```
-
-* load rule
+* load netloc and rule
 
     ```
-    from os_netloc_rule import DictMatcher as Matcher
+    from os_netloc_rule import Matcher
     
-    rules = [
-        ('www.example.com', 1),
-        ('abc.example.com', 2),
-        ('abc.example.com:8080', 3),
+    netloc_rules = [
+        ('www.example.com||', 1),
+        ('abc.example.com||', 2),
+        ('abc.example.com|8080|', 3),
     ]
     
     matcher = Matcher()
-    for netloc, rule in rules:
-        matcher.load(netloc, rule)
+    for netloc_string, rule in rules:
+        matcher.load_from_string(netloc_string, rule)
     ```
 
-* match rule
+* match netloc
 
     ```
     matcher.match('www.example.com')
-    matcher.match('abc.example.com:8080')
+    matcher.match('abc.example.com', '8080', 'http')
     ```
 
 * if there are same netloc with different rule,  the latter covers the former by default. But you can custom your own ``cmp`` function when loading rules
 
     ```
     def cmp(former, latter):
-        return former if former > latter else latter
+        return -1 if former > latter else 1
         
-    matcher.load(netloc, rule, cmp=cmp)
+    matcher.load(host, port, scheme, rule, cmp=cmp)
     ```
 
-* dump rules
+* iter netloc
 
     ```
-    for netloc, rule in matcher.dump():
+    for netloc, rule in matcher.iter():
         pass
     ```
-
-* delete rule
-
-    ```
-    delete, rule = matcher.delete('www.example.com')
-    ```
-
-## Benchmark
-
-``TreeMatcher``:
-
-| python version | operation |   memory   | speed  |
-| :------------: | :-------: | :--------: | :----: |
-|     2.7.14     |   load    | 100w, 380M | 91k/s  |
-|     2.7.14     |   match   |     -      | 118k/s |
-|     3.6.4      |   load    | 100w, 300M | 96k/s  |
-|     3.6.4      |   match   |     -      | 123k/s |
-|   pypy-5.7.1   |   load    | 100w, 251M | 283k/s |
-|   pypy-5.7.1   |   match   |     -      | 529k/s |
-| pypy3.6-7.2.0  |   load    | 100w, 305M | 265k/s |
-| pypy3.6-7.2.0  |   match   |     -      | 473k/s |
-
-``DictMatcher``:
-
-| python version | operation |   memory   |  speed  |
-| :------------: | :-------: | :--------: | :-----: |
-|     2.7.14     |   load    | 100w, 120M | 650k/s  |
-|     2.7.14     |   match   |     -      | 417k/s  |
-|     3.6.4      |   load    | 100w, 100M | 578k/s  |
-|     3.6.4      |   match   |     -      | 389k/s  |
-|   pypy-5.7.1   |   load    | 100w, 75M  | 1.14m/s |
-|   pypy-5.7.1   |   match   |     -      | 2.4m/s  |
-| pypy3.6-7.2.0  |   load    | 100w, 180M | 1.1m/s  |
-| pypy3.6-7.2.0  |   match   |     -      |  2m/s   |
-
 
 ## Unit Tests
 

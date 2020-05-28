@@ -39,7 +39,7 @@ pip install os-netloc-rule
     ]
     
     matcher = Matcher()
-    for netloc_string, rule in rules:
+    for netloc_string, rule in netloc_rules:
         matcher.load_from_string(netloc_string, rule)
     ```
 

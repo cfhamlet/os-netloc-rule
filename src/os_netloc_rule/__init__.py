@@ -5,10 +5,9 @@ A common library for netloc rule.
 import pkgutil
 import sys
 
-from .dict_matcher import DictMatcher  # isort: skip
-from .tree_matcher import TreeMatcher  # isort: skip
+from .netloc import Matcher, Netloc
 
-__all__ = ["__version__", "version_info"]
+__all__ = ["__version__", "version_info", "Matcher", "Netloc"]
 
 
 __version__ = pkgutil.get_data(__package__, "VERSION").decode("ascii").strip()
